@@ -15,31 +15,30 @@ contract MinimalAccountTest is Test {
     uint256 constant AMOUNT = 1e18;
     address randomUser = makeAddr("randomUser");
 
-    function setUp()  public{
+    function setUp() public {
         DeployMinimal deployMinimal = new DeployMinimal();
-        (helperConfig,minimalAccount) = deployMinimal.deployMinialAccount();
+        (helperConfig, minimalAccount) = deployMinimal.deployMinialAccount();
         usdc = new ERC20Mock();
-
     }
 
     function testOwnerCanExcecuteCommands() public {
-        assertEq(usdc.balanceOf(address(minimalAccount)),0);
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0);
         address dest = address(usdc);
         uint256 value = 0;
-        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector,address(minimalAccount),AMOUNT);
+        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT);
         vm.prank(minimalAccount.owner());
-        minimalAccount.execute(dest,value,functionData);
+        minimalAccount.execute(dest, value, functionData);
 
-        assertEq(usdc.balanceOf(address(minimalAccount)),AMOUNT);
+        assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT);
     }
 
     function testNonOwnerCanNotExcecuteCommands() public {
-        assertEq(usdc.balanceOf(address(minimalAccount)),0);
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0);
         address dest = address(usdc);
         uint256 value = 0;
-        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector,address(minimalAccount),AMOUNT);
+        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT);
         vm.prank(randomUser);
         vm.expectRevert(MinimalAccount.MinimalAccount_NotFromEntryPointOrOwner.selector);
-        minimalAccount.execute(dest,value,functionData);
+        minimalAccount.execute(dest, value, functionData);
     }
 }

@@ -10,33 +10,33 @@ import {SIG_VALIDATION_SUCCESS, SIG_VALIDATION_FAILED} from "account-abstraction
 import {IEntryPoint} from "account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 contract MinimalAccount is IAccount, Ownable {
-
     error MinimalAccount_NotFromEntryPoint();
     error MinimalAccount_NotFromEntryPointOrOwner();
     error MinimalAccount_CallFailed(bytes);
 
-    IEntryPoint private immutable i_entryPoint; 
+    IEntryPoint private immutable i_entryPoint;
 
     modifier requireFromEntryPoint() {
-        if(msg.sender != address(i_entryPoint)){
+        if (msg.sender != address(i_entryPoint)) {
             revert MinimalAccount_NotFromEntryPoint();
         }
         _;
     }
 
     modifier requireFromEntryPointOrOwner() {
-        if(msg.sender != address(i_entryPoint) && msg.sender != owner()){
+        if (msg.sender != address(i_entryPoint) && msg.sender != owner()) {
             revert MinimalAccount_NotFromEntryPointOrOwner();
         }
         _;
     }
+
     constructor(address entryPoint) Ownable(msg.sender) {
         i_entryPoint = IEntryPoint(entryPoint);
     }
 
-    function execute(address dest,uint256 value,bytes calldata funcitonData) external requireFromEntryPointOrOwner{
-        (bool success,bytes memory result) = dest.call{value: value}(funcitonData);
-        if(!success){
+    function execute(address dest, uint256 value, bytes calldata funcitonData) external requireFromEntryPointOrOwner {
+        (bool success, bytes memory result) = dest.call{value: value}(funcitonData);
+        if (!success) {
             revert MinimalAccount_CallFailed(result);
         }
     }
@@ -46,7 +46,7 @@ contract MinimalAccount is IAccount, Ownable {
         requireFromEntryPoint
         returns (uint256 validationData)
     {
-        validationData = _validateSignature(userOp,userOpHash);
+        validationData = _validateSignature(userOp, userOpHash);
         _payPrefund(missingAccountFunds);
     }
 
@@ -63,14 +63,14 @@ contract MinimalAccount is IAccount, Ownable {
         return SIG_VALIDATION_SUCCESS;
     }
 
-    function _payPrefund(uint256 missingAccountFunds)  internal{
-        if(missingAccountFunds != 0){
-            (bool success,) = payable(msg.sender).call{value: missingAccountFunds,gas: type(uint256).max}("");
+    function _payPrefund(uint256 missingAccountFunds) internal {
+        if (missingAccountFunds != 0) {
+            (bool success,) = payable(msg.sender).call{value: missingAccountFunds, gas: type(uint256).max}("");
             (success);
         }
     }
 
-    function getEntryPoint() external view returns(address){
+    function getEntryPoint() external view returns (address) {
         return address(i_entryPoint);
     }
 }
